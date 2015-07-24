@@ -38,5 +38,6 @@ cc_test(
         ":spherical_harmonics",
         "//external:gtest",
     ],
+    linkopts = ["-lm"],
 )
 
