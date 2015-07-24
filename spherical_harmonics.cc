@@ -1,6 +1,7 @@
 #include "spherical_harmonics.h"
 
 #include <iostream>
+#include <limits>
 #include <random>
 
 namespace sh {
@@ -68,7 +69,8 @@ bool NearByMargin(double actual, double expected) {
   if (diff < 0.0) {
     diff = -diff;
   }
-  return diff < 1e-16;
+  // 5 bits of error in mantissa (source of '32 *')
+  return diff < 32 * std::numeric_limits<double>::epsilon();
 }
 
 // Return floating mod x % m.
