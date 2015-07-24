@@ -26,6 +26,8 @@
 #include <functional>
 #include <memory>
 
+#include "image.h"
+
 namespace sh {
 
 // A spherical function, the first argument is phi, the second is theta.
@@ -81,7 +83,7 @@ double ImageYToTheta(int y, int height);
 // image. This is the inverse of ImageCoordsToSphericalCoords. It properly
 // supports angles outside of the standard (0, 2pi) or (0, pi) range by mapping
 // them back into it.
-Vector2d ToImageCoords(double phi, double theta, int width, int height);
+Eigen::Vector2d ToImageCoords(double phi, double theta, int width, int height);
 
 // Evaluate the spherical harmonic basis function of degree @l and order @m
 // for the given spherical coordinates, @phi and @theta.
@@ -90,7 +92,7 @@ double EvalSH(int l, int m, double phi, double theta);
 // Evaluate the spherical harmonic basis function of degree @l and order @m
 // for the given direction vector, @dir.
 // Check will fail if @dir is not unit.
-double EvalSH(int l, int m, const Vector3d& dir);
+double EvalSH(int l, int m, const Eigen::Vector3d& dir);
 
 // Fit the given analytical spherical function to the SH basis functions
 // up to @order. This uses Monte Carlo sampling to estimate the underlying
@@ -116,7 +118,7 @@ std::unique_ptr<std::vector<double>> ProjectFunction(
 // coefficients for these functions are stored in the respective indices
 // of the Array3f values of the returned vector.
 std::unique_ptr<std::vector<Eigen::Array3f>> ProjectEnvironment(
-    int order, const Image<Eigen::Array3f>& env);
+    int order, const Image& env);
 
 // Fit the given samples of a spherical function to the SH basis functions
 // up to @order. This variant is used when there are relatively sparse
@@ -141,8 +143,8 @@ T EvalSHSum(int order, const std::vector<T>& coeffs, double phi, double theta);
 // specified in ImageX/YToPhi/Theta. They may be of different
 // resolutions. The resolution of @diffuse_out must be set before invoking this
 // function.
-void RenderDiffuseIrradianceMap(const KImage<RGBf>& env_map,
-                                Image<Eigen::Array3f>* diffuse_out);
+void RenderDiffuseIrradianceMap(const Image& env_map, 
+                                Image* diffuse_out);
 
 // Render into @diffuse_out diffuse irradiance for every normal vector
 // representable in @diffuse_out, for the environment represented as the given
@@ -151,7 +153,7 @@ void RenderDiffuseIrradianceMap(const KImage<RGBf>& env_map,
 // resolution is not necessary (64 x 32 is often quite sufficient).
 // See RenderDiffuseIrradiance for how @sh_coeffs is interpreted.
 void RenderDiffuseIrradianceMap(const std::vector<Eigen::Array3f>& sh_coeffs,
-                                Image<Eigen::Array3f>* diffuse_out);
+                                Image* diffuse_out);
 
 // Compute the diffuse irradiance for @normal given the environment represented
 // as the provided spherical harmonic coefficients, @sh_coeffs. Check will
