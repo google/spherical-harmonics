@@ -1,23 +1,21 @@
-
 licenses(["restricted"])  # MPL2, portions GPL v3, LGPL v3, BSD-like
 
 exports_files(["LICENSE"])
 
-package(
-    default_hdrs_check = "strict",
-)
+# Name of the eigen3 source after being unpacked from its zip
+eigen_project_dir = "eigen-eigen-bdd17ee3b1b3/"
 
 # All Eigen files, including those under a more restrictive license.
 eigen_header_files = glob(
-    "Eigen/**",
-    exclude = ["Eigen/**/CMakeLists.txt"],
+    include = [eigen_project_dir + "Eigen/**"],
+    exclude = [eigen_project_dir + "Eigen/**/CMakeLists.txt"],
 )
 
 cc_library(
     name = "eigen3",
     hdrs = eigen_header_files,
     defines = ["EIGEN_MPL2_ONLY"],
-    includes = ["."],
+    includes = [eigen_project_dir],
     licenses = ["notice"],
     visibility = ["//visibility:public"],
     alwayslink = 1,
