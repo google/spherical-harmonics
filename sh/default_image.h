@@ -1,8 +1,8 @@
 // Simple in-memory image implementation.
-#ifndef DEFAULT_IMAGE_H
-#define DEFAULT_IMAGE_H
+#ifndef SH_DEFAULT_IMAGE_H
+#define SH_DEFAULT_IMAGE_H
 
-#include "image.h"
+#include "sh/image.h"
 
 namespace sh {
 
@@ -25,4 +25,4 @@ class DefaultImage : public Image {
 
 }  // namespace sh
 
-#endif  // DEFAULT_IMAGE_H
+#endif  // SH_DEFAULT_IMAGE_H

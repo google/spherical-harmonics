@@ -19,14 +19,14 @@
 // 4b. Corrections to initial publication:
 //    http://pubs.acs.org/doi/pdf/10.1021/jp9833350
 
-#ifndef SPHERICAL_HARMONICS_H_
-#define SPHERICAL_HARMONICS_H_
+#ifndef SH_SPHERICAL_HARMONICS_H_
+#define SH_SPHERICAL_HARMONICS_H_
 
 #include <array>
 #include <functional>
 #include <memory>
 
-#include "image.h"
+#include "sh/image.h"
 
 namespace sh {
 
@@ -215,4 +215,4 @@ class Rotation {
 
 }  // namespace sh
 
-#endif  // SPHERICAL_HARMONICS_H_
+#endif  // SH_SPHERICAL_HARMONICS_H_

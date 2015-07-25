@@ -1,4 +1,4 @@
-#include "default_image.h"
+#include "sh/default_image.h"
 
 namespace sh {
 

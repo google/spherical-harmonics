@@ -1,5 +1,5 @@
-#include "default_image.h"
-#include "spherical_harmonics.h"
+#include "sh/default_image.h"
+#include "sh/spherical_harmonics.h"
 #include "gtest/gtest.h"
 
 namespace sh {

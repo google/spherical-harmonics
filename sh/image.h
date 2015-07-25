@@ -2,8 +2,8 @@
 // for setting and getting individual pixels. Implement the interface by
 // wrapping the image library of your choice.
 
-#ifndef IMAGE_H
-#define IMAGE_H
+#ifndef SH_IMAGE_H
+#define SH_IMAGE_H
 
 #include <memory>
 

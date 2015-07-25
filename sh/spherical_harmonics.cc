@@ -1,4 +1,4 @@
-#include "spherical_harmonics.h"
+#include "sh/spherical_harmonics.h"
 
 #include <iostream>
 #include <limits>
