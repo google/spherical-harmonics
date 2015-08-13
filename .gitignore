@@ -2,9 +2,5 @@
 *~
 
 #ignore bazel build directories
-bazel-bin
-bazel-genfiles
-bazel-gfx-sh
-bazel-out
-bazel-testlogs
+bazel-*
 
