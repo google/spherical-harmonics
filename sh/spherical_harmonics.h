@@ -101,12 +101,27 @@ Eigen::Vector2d ToImageCoords(double phi, double theta, int width, int height);
 
 // Evaluate the spherical harmonic basis function of degree @l and order @m
 // for the given spherical coordinates, @phi and @theta.
+// For low values of @l this will use a hard-coded function, otherwise it
+// will fallback to EvalSHSlow that uses a recurrence relation to support all l.
 double EvalSH(int l, int m, double phi, double theta);
 
 // Evaluate the spherical harmonic basis function of degree @l and order @m
 // for the given direction vector, @dir.
 // Check will fail if @dir is not unit.
+// For low values of @l this will use a hard-coded function, otherwise it
+// will fallback to EvalSHSlow that uses a recurrence relation to support all l.
 double EvalSH(int l, int m, const Eigen::Vector3d& dir);
+
+// As EvalSH, but always uses the recurrence relationship. This is exposed
+// primarily for testing purposes to ensure the hard-coded functions equal the
+// recurrence relation version.
+double EvalSHSlow(int l, int m, double phi, double theta);
+
+// As EvalSH, but always uses the recurrence relationship. This is exposed
+// primarily for testing purposes to ensure the hard-coded functions equal the
+// recurrence relation version.
+// Check will fail if @dir is not unit.
+double EvalSHSlow(int l, int m, const Eigen::Vector3d& dir);
 
 // Fit the given analytical spherical function to the SH basis functions
 // up to @order. This uses Monte Carlo sampling to estimate the underlying
@@ -150,6 +165,11 @@ std::unique_ptr<std::vector<double>> ProjectSparseSamples(
 // There are explicit instantiations for double, float, and Eigen::Array3f.
 template <typename T>
 T EvalSHSum(int order, const std::vector<T>& coeffs, double phi, double theta);
+
+// As EvalSHSum, but inputting a direction vector instead of spherical coords.
+// Check will fail if @dir is not unit.
+template <typename T>
+T EvalSHSum(int order, const std::vector<T>& coeffs, const Eigen::Vector3d& dir);
 
 // Render into @diffuse_out the diffuse irradiance for every normal vector
 // representable in @diffuse_out, given the luminance stored in @env_map.

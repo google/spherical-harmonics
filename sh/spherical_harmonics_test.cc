@@ -34,6 +34,7 @@ namespace {
   }
 
 const double kEpsilon = 1e-10;
+const double kHardcodedError = 1e-5;
 const double kCoeffErr = 5e-2;
 // Use a lower sample count than the default so the tests complete faster.
 const int kTestSampleCount = 5000;
@@ -305,7 +306,7 @@ TEST(SphericalHarmonicsTest, ToSphericalCoords) {
   EXPECT_EQ(3 * M_PI / 4, theta);
 }
 
-TEST(SphericalHarmonicsTest, EvalSH) {
+TEST(SphericalHarmonicsTest, EvalSHSlow) {
   // Compare the general SH implementation to the closed form functions for
   // several bands, from: http://en.wikipedia.org/wiki/Table_of_spherical_harmonics#Real_spherical_harmonics
   // It's assumed that if the implementation matches these for this subset, the
@@ -319,34 +320,51 @@ TEST(SphericalHarmonicsTest, EvalSH) {
   const Eigen::Vector3d d = ToVector(phi, theta);
 
   // l = 0
-  EXPECT_NEAR(0.5 * sqrt(1 / M_PI), EvalSH(0, 0, phi, theta), kEpsilon);
+  EXPECT_NEAR(0.5 * sqrt(1 / M_PI), EvalSHSlow(0, 0, phi, theta), kEpsilon);
 
   // l = 1, m = -1
-  EXPECT_NEAR(-sqrt(3 / (4 * M_PI)) * d.y(), EvalSH(1, -1, phi, theta),
+  EXPECT_NEAR(-sqrt(3 / (4 * M_PI)) * d.y(), EvalSHSlow(1, -1, phi, theta),
               kEpsilon);
   // l = 1, m = 0
-  EXPECT_NEAR(sqrt(3 / (4 * M_PI)) * d.z(), EvalSH(1, 0, phi, theta),
+  EXPECT_NEAR(sqrt(3 / (4 * M_PI)) * d.z(), EvalSHSlow(1, 0, phi, theta),
               kEpsilon);
   // l = 1, m = 1
-  EXPECT_NEAR(-sqrt(3 / (4 * M_PI)) * d.x(), EvalSH(1, 1, phi, theta),
+  EXPECT_NEAR(-sqrt(3 / (4 * M_PI)) * d.x(), EvalSHSlow(1, 1, phi, theta),
               kEpsilon);
 
   // l = 2, m = -2
   EXPECT_NEAR(0.5 * sqrt(15 / M_PI) * d.x() * d.y(),
-              EvalSH(2, -2, phi, theta), kEpsilon);
+              EvalSHSlow(2, -2, phi, theta), kEpsilon);
   // l = 2, m = -1
   EXPECT_NEAR(-0.5 * sqrt(15 / M_PI) * d.y() * d.z(),
-              EvalSH(2, -1, phi, theta), kEpsilon);
+              EvalSHSlow(2, -1, phi, theta), kEpsilon);
   // l = 2, m = 0
   EXPECT_NEAR(0.25 * sqrt(5 / M_PI) *
               (-d.x() * d.x() - d.y() * d.y() + 2 * d.z() * d.z()),
-              EvalSH(2, 0, phi, theta), kEpsilon);
+              EvalSHSlow(2, 0, phi, theta), kEpsilon);
   // l = 2, m = 1
   EXPECT_NEAR(-0.5 * sqrt(15 / M_PI) * d.z() * d.x(),
-              EvalSH(2, 1, phi, theta), kEpsilon);
+              EvalSHSlow(2, 1, phi, theta), kEpsilon);
   // l = 2, m = 2
   EXPECT_NEAR(0.25 * sqrt(15 / M_PI) * (d.x() * d.x() - d.y() * d.y()),
-              EvalSH(2, 2, phi, theta), kEpsilon);
+              EvalSHSlow(2, 2, phi, theta), kEpsilon);
+}
+
+TEST(SphericalHarmonicsTest, EvalSHHardcoded) {
+  // Arbitrary coordinates
+  const double phi = 0.4296;
+  const double theta = 1.73234;
+  const Eigen::Vector3d d = ToVector(phi, theta);
+
+  for (int l = 0; l <= 4; l++) {
+    for (int m = -l; m <= l; m++) {
+      double expected = EvalSHSlow(l, m, phi, theta);
+      EXPECT_NEAR(expected, EvalSH(l, m, phi, theta), kHardcodedError)
+          << "Spherical coord failure for l, m = (" << l << ", " << m << ")";
+      EXPECT_NEAR(expected, EvalSH(l, m, d), kHardcodedError)
+          << "Vector failure for l, m = (" << l << ", " << m << ")";
+    }
+  }
 }
 
 TEST(SphericalHarmonicsDeathTest, EvalSHBadInputs) {
@@ -716,6 +734,81 @@ TEST(SphericalHarmonicsRotationTest, RotateInPlace) {
   // rotated source function
   for (int i = 0; i < 16; i++) {
     EXPECT_NEAR((*rotated_coeff)[i], (*coeff)[i], kCoeffErr);
+  }
+}
+
+TEST(SphericalHarmonicsRotationTest, RotateArray3f) {
+  // The coefficients for red, green, and blue channels
+  const std::vector<double> c_red = {-1.028, 0.779, -0.275, 0.601, -0.256,
+                                     1.891, -1.658, -0.370, -0.772};
+  const std::vector<double> c_green = {-0.591, -0.713, 0.191, 1.206, -0.587,
+                                       -0.051, 1.543, -0.818, 1.482};
+  const std::vector<double> c_blue = {-1.119, 0.559, 0.433, -0.680, -1.815,
+                                      -0.915, 1.345, 1.572, -0.622};
+
+  // Combined as an Array3f
+  std::vector<Eigen::Array3f> combined;
+  for (unsigned int i = 0; i < c_red.size(); i++) {
+    combined.push_back(Eigen::Array3f(c_red[i], c_green[i], c_blue[i]));
+  }
+
+
+  // Rotate the function about the y axis by pi/4, which is no longer an
+  // identity for the SH coefficients
+  const Eigen::Quaterniond r(Eigen::AngleAxisd(M_PI / 4.0, Eigen::Vector3d::UnitY()));
+  std::unique_ptr<Rotation> r_sh(Rotation::Create(2, r));
+
+  std::vector<double> rotated_r;
+  std::vector<double> rotated_g;
+  std::vector<double> rotated_b;
+  std::vector<Eigen::Array3f> rotated_combined;
+
+  r_sh->Apply(c_red, &rotated_r);
+  r_sh->Apply(c_green, &rotated_g);
+  r_sh->Apply(c_blue, &rotated_b);
+  r_sh->Apply(combined, &rotated_combined);
+
+  for (unsigned int i = 0; i < c_red.size(); i++) {
+    EXPECT_FLOAT_EQ(rotated_r[i], rotated_combined[i](0));
+    EXPECT_FLOAT_EQ(rotated_g[i], rotated_combined[i](1));
+    EXPECT_FLOAT_EQ(rotated_b[i], rotated_combined[i](2));
+  }
+}
+
+TEST(SphericalHarmonicsRotationTest, RotateArray3fInPlace) {
+  // The coefficients for red, green, and blue channels
+  const std::vector<double> c_red = {-1.028, 0.779, -0.275, 0.601, -0.256,
+                                     1.891, -1.658, -0.370, -0.772};
+  const std::vector<double> c_green = {-0.591, -0.713, 0.191, 1.206, -0.587,
+                                       -0.051, 1.543, -0.818, 1.482};
+  const std::vector<double> c_blue = {-1.119, 0.559, 0.433, -0.680, -1.815,
+                                      -0.915, 1.345, 1.572, -0.622};
+
+  // Combined as an Array3f
+  std::vector<Eigen::Array3f> combined;
+  for (unsigned int i = 0; i < c_red.size(); i++) {
+    combined.push_back(Eigen::Array3f(c_red[i], c_green[i], c_blue[i]));
+  }
+
+
+  // Rotate the function about the y axis by pi/4, which is no longer an
+  // identity for the SH coefficients
+  const Eigen::Quaterniond r(Eigen::AngleAxisd(M_PI / 4.0, Eigen::Vector3d::UnitY()));
+  std::unique_ptr<Rotation> r_sh(Rotation::Create(2, r));
+
+  std::vector<double> rotated_r;
+  std::vector<double> rotated_g;
+  std::vector<double> rotated_b;
+
+  r_sh->Apply(c_red, &rotated_r);
+  r_sh->Apply(c_green, &rotated_g);
+  r_sh->Apply(c_blue, &rotated_b);
+  r_sh->Apply(combined, &combined);
+
+  for (unsigned int i = 0; i < c_red.size(); i++) {
+    EXPECT_FLOAT_EQ(rotated_r[i], combined[i](0));
+    EXPECT_FLOAT_EQ(rotated_g[i], combined[i](1));
+    EXPECT_FLOAT_EQ(rotated_b[i], combined[i](2));
   }
 }
 
