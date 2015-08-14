@@ -35,7 +35,8 @@ const int kIrradianceCoeffCount = GetCoefficientCount(kIrradianceOrder);
 // spherical harmonic coefficients are hardcoded below. This was computed by
 // evaluating:
 //   ProjectFunction(kIrradianceOrder, [] (double phi, double theta) {
-//     return Clamp(Eigen::Vector3d::UnitZ().dot(ToVector(phi, theta)), 0.0, 1.0);
+//     return Clamp(Eigen::Vector3d::UnitZ().dot(ToVector(phi, theta)), 
+//                  0.0, 1.0);
 //   }, 10000000);
 const std::vector<double> cosine_lobe = { 0.886227, 0.0, 1.02333, 0.0, 0.0, 0.0,
                                           0.495416, 0.0, 0.0 };
@@ -701,8 +702,9 @@ std::unique_ptr<std::vector<Eigen::Array3f>> ProjectEnvironment(
   return coeffs;
 }
 
-std::unique_ptr<std::vector<double>> ProjectSparseSamples(int order,
-    const std::vector<Eigen::Vector3d>& dirs, const std::vector<double>& values) {
+std::unique_ptr<std::vector<double>> ProjectSparseSamples(
+    int order, const std::vector<Eigen::Vector3d>& dirs, 
+    const std::vector<double>& values) {
   CHECK(order >= 0, "Order must be at least zero.");
   CHECK(dirs.size() == values.size(),
       "Directions and values must have the same size.");
@@ -760,7 +762,8 @@ T EvalSHSum(int order, const std::vector<T>& coeffs, double phi, double theta) {
 }
 
 template <typename T>
-T EvalSHSum(int order, const std::vector<T>& coeffs, const Eigen::Vector3d& dir) {
+T EvalSHSum(int order, const std::vector<T>& coeffs, 
+            const Eigen::Vector3d& dir) {
   if (order > kHardCodedOrderLimit) {
     // It is faster to switch to spherical coordinates
     double phi, theta;
@@ -782,8 +785,7 @@ T EvalSHSum(int order, const std::vector<T>& coeffs, const Eigen::Vector3d& dir)
 }
 
 Rotation::Rotation(int order, const Eigen::Quaterniond& rotation)
-    : order_(order),
-      rotation_(rotation) {
+    : order_(order), rotation_(rotation) {
   band_rotations_.reserve(GetCoefficientCount(order));
 }
 
@@ -791,7 +793,7 @@ std::unique_ptr<Rotation> Rotation::Create(
     int order, const Eigen::Quaterniond& rotation) {
   CHECK(order >= 0, "Order must be at least 0.");
   CHECK(NearByMargin(rotation.squaredNorm(), 1.0),
-      "Rotation must be normalized.");
+        "Rotation must be normalized.");
 
   std::unique_ptr<Rotation> sh_rot(new Rotation(order, rotation));
 
@@ -858,7 +860,7 @@ const Eigen::MatrixXd& Rotation::band_rotation(int l) const {
 
 template <typename T>
 void Rotation::Apply(const std::vector<T>& coeff,
-                      std::vector<T>* result) const {
+                     std::vector<T>* result) const {
   CHECK(coeff.size() == GetCoefficientCount(order_),
         "Incorrect number of coefficients provided.");
 
@@ -892,8 +894,7 @@ void Rotation::Apply(const std::vector<T>& coeff,
   }
 }
 
-void RenderDiffuseIrradianceMap(const Image& env_map,
-                                Image* diffuse_out) {
+void RenderDiffuseIrradianceMap(const Image& env_map, Image* diffuse_out) {
   std::unique_ptr<std::vector<Eigen::Array3f>> coeffs =
       ProjectEnvironment(kIrradianceOrder, env_map);
   RenderDiffuseIrradianceMap(*coeffs, diffuse_out);
@@ -912,8 +913,9 @@ void RenderDiffuseIrradianceMap(const std::vector<Eigen::Array3f>& sh_coeffs,
   }
 }
 
-Eigen::Array3f RenderDiffuseIrradiance(const std::vector<Eigen::Array3f>& sh_coeffs,
-                             const Eigen::Vector3d& normal) {
+Eigen::Array3f RenderDiffuseIrradiance(
+    const std::vector<Eigen::Array3f>& sh_coeffs,
+    const Eigen::Vector3d& normal) {
   // Optimization for if sh_coeffs is empty, then there is no environmental
   // illumination so irradiance is 0.0 regardless of the normal.
   if (sh_coeffs.empty()) {
@@ -925,7 +927,8 @@ Eigen::Array3f RenderDiffuseIrradiance(const std::vector<Eigen::Array3f>& sh_coe
   rotation.setFromTwoVectors(Eigen::Vector3d::UnitZ(), normal).normalize();
 
   std::vector<double> rotated_cos(kIrradianceCoeffCount);
-  std::unique_ptr<sh::Rotation> sh_rot(Rotation::Create(kIrradianceOrder, rotation));
+  std::unique_ptr<sh::Rotation> sh_rot(Rotation::Create(
+      kIrradianceOrder, rotation));
   sh_rot->Apply(cosine_lobe, &rotated_cos);
 
   Eigen::Array3f sum(0.0, 0.0, 0.0);
@@ -996,4 +999,3 @@ template <> void Rotation::Apply<Eigen::Array3f>(
 }
 
 }  // namespace sh
-

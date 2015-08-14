@@ -104,14 +104,15 @@ void ComputeExplicitDiffuseIrradiance(const Image& env_map,
   for (int y = 0; y < kImageHeight; y++) {
     for (int x = 0; x < kImageWidth; x++) {
       Eigen::Vector3d normal = ToVector((x + 0.5) * 2 * M_PI / kImageWidth,
-                                 (y + 0.5) * M_PI / kImageHeight);
+                                        (y + 0.5) * M_PI / kImageHeight);
       Eigen::Array3f irradiance(0.0, 0.0, 0.0);
       for (int ey = 0; ey < env_map.height(); ey++) {
         double theta = (ey + 0.5) * M_PI / env_map.height();
         double sa = pixel_area * sin(theta);
         for (int ex = 0; ex < env_map.width(); ex++) {
-          Eigen::Vector3d light = ToVector((ex + 0.5) * 2 * M_PI / env_map.width(),
-                                    (ey + 0.5) * M_PI / env_map.height());
+          Eigen::Vector3d light = ToVector(
+              (ex + 0.5) * 2 * M_PI / env_map.width(),
+              (ey + 0.5) * M_PI / env_map.height());
           irradiance += sa * Clamp(light.dot(normal), 0.0, 1.0) *
               env_map.GetPixel(ex, ey);
         }
@@ -189,8 +190,8 @@ TEST(SphericalHarmonicsTest, ProjectEnvironment) {
     for (int p = 0; p < env_map.width(); p++) {
       double phi = (p + 0.5) * 2.0 * M_PI / env_map.width();
       env_map.SetPixel(p, t, Eigen::Array3f(EvalSHSum(2, c_red, phi, theta),
-                                  EvalSHSum(2, c_green, phi, theta),
-                                  EvalSHSum(2, c_blue, phi, theta)));
+                                            EvalSHSum(2, c_green, phi, theta),
+                                            EvalSHSum(2, c_blue, phi, theta)));
     }
   }
 
@@ -267,17 +268,19 @@ TEST(SphericalHarmonicsTest, GetCoefficientCount) {
 
 TEST(SphericalHarmonicsTest, ToVector) {
   // Compare spherical coordinates with their known direction vectors.
-  EXPECT_TUPLE3_NEAR(Eigen::Vector3d(1, 0, 0), ToVector(0.0, M_PI / 2), kEpsilon);
-  EXPECT_TUPLE3_NEAR(Eigen::Vector3d(0, 1, 0), ToVector(M_PI / 2, M_PI / 2), kEpsilon);
+  EXPECT_TUPLE3_NEAR(Eigen::Vector3d(1, 0, 0), ToVector(0.0, M_PI / 2), 
+                     kEpsilon);
+  EXPECT_TUPLE3_NEAR(Eigen::Vector3d(0, 1, 0), ToVector(M_PI / 2, M_PI / 2), 
+                     kEpsilon);
   EXPECT_TUPLE3_NEAR(Eigen::Vector3d(0, 0, 1), ToVector(0.0, 0.0), kEpsilon);
   EXPECT_TUPLE3_NEAR(Eigen::Vector3d(0.5, 0.5, sqrt(0.5)),
-                   ToVector(M_PI / 4, M_PI / 4), kEpsilon);
+                     ToVector(M_PI / 4, M_PI / 4), kEpsilon);
   EXPECT_TUPLE3_NEAR(Eigen::Vector3d(0.5, 0.5, -sqrt(0.5)),
-                   ToVector(M_PI / 4, 3 * M_PI / 4), kEpsilon);
+                     ToVector(M_PI / 4, 3 * M_PI / 4), kEpsilon);
   EXPECT_TUPLE3_NEAR(Eigen::Vector3d(-0.5, 0.5, -sqrt(0.5)),
-                   ToVector(3 * M_PI / 4, 3 * M_PI / 4), kEpsilon);
+                     ToVector(3 * M_PI / 4, 3 * M_PI / 4), kEpsilon);
   EXPECT_TUPLE3_NEAR(Eigen::Vector3d(0.5, -0.5, -sqrt(0.5)),
-                   ToVector(-M_PI / 4, 3 * M_PI / 4), kEpsilon);
+                     ToVector(-M_PI / 4, 3 * M_PI / 4), kEpsilon);
 }
 
 TEST(SphericalHarmonicsTest, ToSphericalCoords) {
@@ -448,7 +451,8 @@ TEST(SphericalHarmonicsDeathTest, EvalSHSumBadInputs) {
 
 TEST(SphericalHarmonicsDeathTest, ToSphericalCoordsBadInputs) {
   double phi, theta;
-  EXPECT_DEATH(ToSphericalCoords(Eigen::Vector3d(2.0, 0.0, 0.4), &phi, &theta), "");
+  EXPECT_DEATH(ToSphericalCoords(Eigen::Vector3d(2.0, 0.0, 0.4), &phi, &theta),
+               "");
 }
 
 TEST(SphericalHarmonicsRotationTest, ClosedFormZAxisRotation) {
@@ -495,8 +499,8 @@ TEST(SphericalHarmonicsRotationTest, ClosedFormZAxisRotation) {
 
 TEST(SphericalHarmonicsRotationTest, ClosedFormBands) {
   // Use an arbitrary rotation
-  Eigen::Quaterniond r(
-      Eigen::AngleAxisd(0.423, Eigen::Vector3d(0.234, -0.642, 0.829).normalized()));
+  Eigen::Quaterniond r(Eigen::AngleAxisd(
+      0.423, Eigen::Vector3d(0.234, -0.642, 0.829).normalized()));
   Eigen::Matrix3d r_mat = r.toRotationMatrix();
 
   // Create rotation for band 1 and 2
@@ -710,7 +714,8 @@ TEST(SphericalHarmonicsRotationTest, RotateComplexFunction) {
 TEST(SphericalHarmonicsRotationTest, RotateInPlace) {
   // Rotate the function about the y axis by pi/4, which is no longer an
   // identity for the SH coefficients
-  const Eigen::Quaterniond r(Eigen::AngleAxisd(M_PI / 4.0, Eigen::Vector3d::UnitY()));
+  const Eigen::Quaterniond r(Eigen::AngleAxisd(
+      M_PI / 4.0, Eigen::Vector3d::UnitY()));
   const Eigen::Quaterniond r_inv = r.inverse();
   std::unique_ptr<Rotation> r_sh(Rotation::Create(3, r));
 
@@ -755,7 +760,8 @@ TEST(SphericalHarmonicsRotationTest, RotateArray3f) {
 
   // Rotate the function about the y axis by pi/4, which is no longer an
   // identity for the SH coefficients
-  const Eigen::Quaterniond r(Eigen::AngleAxisd(M_PI / 4.0, Eigen::Vector3d::UnitY()));
+  const Eigen::Quaterniond r(Eigen::AngleAxisd(
+      M_PI / 4.0, Eigen::Vector3d::UnitY()));
   std::unique_ptr<Rotation> r_sh(Rotation::Create(2, r));
 
   std::vector<double> rotated_r;
@@ -793,7 +799,8 @@ TEST(SphericalHarmonicsRotationTest, RotateArray3fInPlace) {
 
   // Rotate the function about the y axis by pi/4, which is no longer an
   // identity for the SH coefficients
-  const Eigen::Quaterniond r(Eigen::AngleAxisd(M_PI / 4.0, Eigen::Vector3d::UnitY()));
+  const Eigen::Quaterniond r(Eigen::AngleAxisd(
+      M_PI / 4.0, Eigen::Vector3d::UnitY()));
   std::unique_ptr<Rotation> r_sh(Rotation::Create(2, r));
 
   std::vector<double> rotated_r;
@@ -813,7 +820,8 @@ TEST(SphericalHarmonicsRotationTest, RotateArray3fInPlace) {
 }
 
 TEST(SphericalHarmonicsRotationDeathTest, CreateFromMatrixBadInputs) {
-  Eigen::Quaterniond good_r(Eigen::AngleAxisd(M_PI / 4.0, Eigen::Vector3d::UnitY()));
+  Eigen::Quaterniond good_r(Eigen::AngleAxisd(
+      M_PI / 4.0, Eigen::Vector3d::UnitY()));
   Eigen::Quaterniond bad_r(0.0, 0.0, 0.1, 0.3);
 
   EXPECT_DEATH(Rotation::Create(-1, good_r), "Order must be at least 0.");
@@ -821,7 +829,8 @@ TEST(SphericalHarmonicsRotationDeathTest, CreateFromMatrixBadInputs) {
 }
 
 TEST(SphericalHarmonicsRotationDeathTest, CreateFromSHBadInputs) {
-  Eigen::Quaterniond good_r(Eigen::AngleAxisd(M_PI / 4.0, Eigen::Vector3d::UnitY()));
+  Eigen::Quaterniond good_r(Eigen::AngleAxisd(
+      M_PI / 4.0, Eigen::Vector3d::UnitY()));
   std::unique_ptr<Rotation> good_sh(Rotation::Create(2, good_r));
 
   EXPECT_DEATH(Rotation::Create(-1, *good_sh), "Order must be at least 0.");
@@ -868,17 +877,16 @@ TEST(SphericalHarmonicsTest, ImageCoordsToSphericalCoordsTest) {
 
 TEST(SphericalHarmonicsTest, SphericalCoordsToImageCoordsTest) {
   EXPECT_TUPLE2_NEAR(Eigen::Vector2d(0.0, 0.0),
-                   ToImageCoords(0.0, 0.0, kImageWidth,
-                                                kImageHeight), kEpsilon);
+                     ToImageCoords(0.0, 0.0, kImageWidth, kImageHeight), 
+                     kEpsilon);
 
   EXPECT_TUPLE2_NEAR(Eigen::Vector2d(kImageWidth / 2.0, kImageHeight / 2.0),
-                   ToImageCoords(M_PI, M_PI / 2.0, kImageWidth,
-                                                kImageHeight), kEpsilon);
+                     ToImageCoords(M_PI, M_PI / 2.0, kImageWidth, kImageHeight),
+                     kEpsilon);
 
   EXPECT_TUPLE2_NEAR(Eigen::Vector2d(kImageWidth, kImageHeight),
-                   ToImageCoords(2 * M_PI - kEpsilon * 1e-3,
-                                                M_PI, kImageWidth,
-                                                kImageHeight), kEpsilon);
+                     ToImageCoords(2 * M_PI - kEpsilon * 1e-3,
+                                   M_PI, kImageWidth, kImageHeight), kEpsilon);
 
   // Out of the normal phi, theta ranges
 
@@ -888,19 +896,18 @@ TEST(SphericalHarmonicsTest, SphericalCoordsToImageCoordsTest) {
   // 180 in the xy plane (full rotation to bring it into range, and a 180
   // adjust for the z axis).
   EXPECT_TUPLE2_NEAR(Eigen::Vector2d(kImageWidth / 2 - 0.5, 0.5),
-                   ToImageCoords(-M_PI / kImageWidth,
-                                                -0.5 * M_PI / kImageHeight,
-                                                kImageWidth, kImageHeight),
-                   kEpsilon);
+                     ToImageCoords(-M_PI / kImageWidth, 
+                                   -0.5 * M_PI / kImageHeight,
+                                   kImageWidth, kImageHeight), kEpsilon);
 
   // A half pixel past one full rotation in the xy plane and the through the
   // z axis. The equivalent in-range angles are a half pixel past 180 degrees
   // in the xy plane and half a pixel shy of 180 along the z axis.
   EXPECT_TUPLE2_NEAR(Eigen::Vector2d(kImageWidth / 2 + 0.5, kImageHeight - 0.5),
-                   ToImageCoords(
-                       (kImageWidth + 0.5) * 2 * M_PI / kImageWidth,
-                       (kImageHeight + 0.5) * M_PI / kImageHeight,
-                       kImageWidth, kImageHeight), kEpsilon);
+                     ToImageCoords(
+                         (kImageWidth + 0.5) * 2 * M_PI / kImageWidth,
+                         (kImageHeight + 0.5) * M_PI / kImageHeight,
+                         kImageWidth, kImageHeight), kEpsilon);
 }
 
 TEST(SphericalHarmonicsTest, RenderDiffuseIrradianceTest) {
@@ -926,8 +933,10 @@ TEST(SphericalHarmonicsTest, RenderDiffuseIrradianceTest) {
     env_rgb[i] = Eigen::Array3f((*env)[i], (*env)[i], (*env)[i]);
   }
 
-  Eigen::Array3f diffuse_irradiance = RenderDiffuseIrradiance(env_rgb, Eigen::Vector3d::UnitZ());
-  EXPECT_TUPLE3_NEAR(Eigen::Array3f(M_PI, M_PI, M_PI), diffuse_irradiance, kIrradianceError);
+  Eigen::Array3f diffuse_irradiance = RenderDiffuseIrradiance(
+      env_rgb, Eigen::Vector3d::UnitZ());
+  EXPECT_TUPLE3_NEAR(Eigen::Array3f(M_PI, M_PI, M_PI), diffuse_irradiance, 
+                     kIrradianceError);
 }
 
 TEST(SphericalHarmonicsTest, RenderDiffuseIrradianceMapTest) {
@@ -965,9 +974,9 @@ TEST(SphericalHarmonicsTest, RenderDiffuseIrradianceMoreCoefficientsTest) {
     float c = static_cast<float>(i);
     coeffs12.push_back({c, c, c});
   }
-  EXPECT_TUPLE3_NEAR(RenderDiffuseIrradiance(coeffs9, Eigen::Vector3d::UnitZ()),
-                  RenderDiffuseIrradiance(coeffs12, Eigen::Vector3d::UnitZ()),
-                  kEpsilon);
+  EXPECT_TUPLE3_NEAR(
+      RenderDiffuseIrradiance(coeffs9, Eigen::Vector3d::UnitZ()),
+      RenderDiffuseIrradiance(coeffs12, Eigen::Vector3d::UnitZ()), kEpsilon);
 }
 
 TEST(SphericalHarmonicsTest, RenderDiffuseIrradianceFewCoefficientsTest) {
@@ -984,13 +993,14 @@ TEST(SphericalHarmonicsTest, RenderDiffuseIrradianceFewCoefficientsTest) {
   }
 
   EXPECT_TUPLE3_NEAR(RenderDiffuseIrradiance(coeffs9, Eigen::Vector3d::UnitZ()),
-                  RenderDiffuseIrradiance(coeffs3, Eigen::Vector3d::UnitZ()),
-                  kEpsilon);
+                     RenderDiffuseIrradiance(coeffs3, Eigen::Vector3d::UnitZ()),
+                     kEpsilon);
 }
 
 TEST(SphericalHarmonicUtilsTest, RenderDiffuseIrradianceNoCoefficientsTest) {
   EXPECT_TUPLE3_NEAR(Eigen::Array3f(0.0, 0.0, 0.0),
-                  RenderDiffuseIrradiance({}, Eigen::Vector3d::UnitZ()), kEpsilon);
+                     RenderDiffuseIrradiance({}, Eigen::Vector3d::UnitZ()), 
+                     kEpsilon);
 }
 
 }  // namespace sh
