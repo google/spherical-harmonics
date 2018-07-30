@@ -30,6 +30,7 @@ cc_library(
 
 cc_test(
     name = "spherical_harmonics_test",
+    size = "small",
     srcs = [
         "spherical_harmonics_test.cc",
     ],
