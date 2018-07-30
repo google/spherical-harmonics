@@ -1,15 +1,19 @@
+# Base directory for project after unpacking
+googletest_project_dir = "googletest-release-1.8.0/googletest"
+
 cc_library(
     name = "main",
     srcs = glob(
-        ["gtest-1.7.0/src/*.cc"],
-        exclude = ["gtest-1.7.0/src/gtest-all.cc"]
+        [googletest_project_dir + "/src/*.h",
+         googletest_project_dir + "/include/gtest/internal/**/*.h",
+         googletest_project_dir + "/src/*.cc"],
+        exclude = [googletest_project_dir + "/src/gtest-all.cc"]
     ),
-    hdrs = glob(["gtest-1.7.0/include/**/*.h"]),
+    hdrs = glob([googletest_project_dir + "/include/gtest/*.h"]),
     includes = [
-        "gtest-1.7.0",
-        "gtest-1.7.0/include"
+        googletest_project_dir + "/",
+        googletest_project_dir + "/include"
     ],
     linkopts = ["-pthread"],
     visibility = ["//visibility:public"],
 )
-
