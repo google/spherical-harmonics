@@ -3,7 +3,7 @@ licenses(["restricted"])  # MPL2, portions GPL v3, LGPL v3, BSD-like
 exports_files(["LICENSE"])
 
 # Name of the eigen3 source after being unpacked from its zip
-eigen_project_dir = "eigen-eigen-bdd17ee3b1b3/"
+eigen_project_dir = "eigen-eigen-b3f3d4950030/"
 
 # All Eigen files, including those under a more restrictive license.
 eigen_header_files = glob(
