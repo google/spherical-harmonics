@@ -1,23 +1,23 @@
 new_http_archive(
-  name = "http-eigen3",
-  url = "https://bitbucket.org/eigen/eigen/get/3.2.5.zip",
-  sha256 = "73eeb8231acf1b1c498ca0f9d3b94eeb25f2594c0fc3f11c4bb823d019ec0c01",
+  name = "http_eigen3",
+  url = "https://bitbucket.org/eigen/eigen/get/3.3.5.zip",
+  sha256 = "35fa84bc23114b9d37c4597745f8b4e03354a5077579fdba597019f595a602b6",
   build_file = "third_party/eigen3.BUILD",
 )
 
 new_http_archive(
-  name = "http-gtest",
-  url = "https://googletest.googlecode.com/files/gtest-1.7.0.zip",
-  sha256 = "247ca18dd83f53deb1328be17e4b1be31514cedfc1e3424f672bf11fd7e0d60d",
+  name = "http_gtest",
+  url = "https://github.com/google/googletest/archive/release-1.8.0.zip",
+  sha256 = "f3ed3b58511efd272eb074a3a6d6fb79d7c2e6a0e374323d1e6bcbcc1ef141bf",
   build_file = "third_party/gtest.BUILD",
 )
 
 bind(
   name = "eigen3",
-  actual = "@http-eigen3//:eigen3",
+  actual = "@http_eigen3//:eigen3",
 )
 
 bind(
   name = "gtest",
-  actual = "@http-gtest//:main",
+  actual = "@http_gtest//:main",
 )
