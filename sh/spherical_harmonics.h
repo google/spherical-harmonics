@@ -43,6 +43,10 @@
 
 #include "sh/image.h"
 
+#ifndef M_PI
+#define M_PI  3.14159265358979323846
+#endif
+
 namespace sh {
 
 // A spherical function, the first argument is phi, the second is theta.
