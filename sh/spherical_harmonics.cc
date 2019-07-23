@@ -65,7 +65,7 @@ using VectorX = Eigen::Matrix<T, Eigen::Dynamic, 1>;
     } \
   } while(false)
 #else
-# define ASSERT(condition, message) do {} while(false)
+# define CHECK(condition, message) do {} while(false)
 #endif
 
 // Clamp the first argument to be greater than or equal to the second
