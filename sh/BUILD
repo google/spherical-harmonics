@@ -1,8 +1,15 @@
+config_setting(
+    name = "windows",
+    constraint_values = [
+        "@bazel_tools//platforms:windows",
+    ],
+)
+
 cc_library(
     name = "image",
     hdrs = ["image.h"],
     deps = [
-        "//external:eigen3",
+        "@eigen3//:eigen3",
     ],
     visibility = ["//visibility:public"],
     alwayslink = 1
@@ -14,8 +21,11 @@ cc_library(
     hdrs = ["spherical_harmonics.h"],
     deps = [
         ":image",
-        "//external:eigen3",
+        "@eigen3//:eigen3",
     ],
+    defines = select({
+        ":windows": ["_USE_MATH_DEFINES",],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -37,7 +47,7 @@ cc_test(
     deps = [
         ":default_image",
         ":spherical_harmonics",
-        "//external:gtest",
+        "@gtest//:main",
     ],
     linkopts = ["-lm"],
 )
