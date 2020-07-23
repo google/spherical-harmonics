@@ -7,9 +7,8 @@ cc_library(
         exclude = ["googletest/src/gtest-all.cc"]
     ),
     hdrs = glob(["googletest/include/gtest/*.h"]),
-    includes = ["/",
-                "/include"
-    ],
+    includes = ["googletest/",
+                "googletest/include"],
     linkopts = ["-pthread"],
     visibility = ["//visibility:public"],
 )
