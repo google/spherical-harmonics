@@ -246,8 +246,8 @@ double Factorial(int x) {
   if (x < kCacheSize) {
     return factorial_cache[x];
   } else {
-    double s = 1.0;
-    for (int n = 2; n <= x; n++) {
+    double s = factorial_cache[kCacheSize - 1];
+    for (int n = kCacheSize; n <= x; n++) {
       s *= n;
     }
     return s;
@@ -268,9 +268,9 @@ double DoubleFactorial(int x) {
   if (x < kCacheSize) {
     return dbl_factorial_cache[x];
   } else {
-    double s = 1.0;
+    double s = dbl_factorial_cache[kCacheSize - (x % 2 == 0 ? 2 : 1)];
     double n = x;
-    while (n > 1.0) {
+    while (n >= kCacheSize) {
       s *= n;
       n -= 2.0;
     }
