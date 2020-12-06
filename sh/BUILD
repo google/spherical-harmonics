@@ -25,6 +25,7 @@ cc_library(
     ],
     defines = select({
         ":windows": ["_USE_MATH_DEFINES",],
+        "//conditions:default": [],
     }),
     visibility = ["//visibility:public"],
 )
