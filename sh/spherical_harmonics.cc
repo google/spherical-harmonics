@@ -238,7 +238,7 @@ double HardcodedSH4p4(const Eigen::Vector3d& d) {
 //
 // The vast majority of SH evaluations will hit these precomputed values.
 double Factorial(int x) {
-  const double factorial_cache[kCacheSize] = {1, 1, 2, 6, 24, 120, 720, 5040,
+  static const double factorial_cache[kCacheSize] = {1, 1, 2, 6, 24, 120, 720, 5040,
                                               40320, 362880, 3628800, 39916800,
                                               479001600, 6227020800,
                                               87178291200, 1307674368000};
@@ -246,8 +246,8 @@ double Factorial(int x) {
   if (x < kCacheSize) {
     return factorial_cache[x];
   } else {
-    double s = 1.0;
-    for (int n = 2; n <= x; n++) {
+    double s = factorial_cache[kCacheSize - 1];
+    for (int n = kCacheSize; n <= x; n++) {
       s *= n;
     }
     return s;
@@ -261,16 +261,16 @@ double Factorial(int x) {
 // The vast majority of SH evaluations will hit these precomputed values.
 // See http://mathworld.wolfram.com/DoubleFactorial.html
 double DoubleFactorial(int x) {
-  const double dbl_factorial_cache[kCacheSize] = {1, 1, 2, 3, 8, 15, 48, 105,
+  static const double dbl_factorial_cache[kCacheSize] = {1, 1, 2, 3, 8, 15, 48, 105,
                                                   384, 945, 3840, 10395, 46080,
                                                   135135, 645120, 2027025};
 
   if (x < kCacheSize) {
     return dbl_factorial_cache[x];
   } else {
-    double s = 1.0;
+    double s = dbl_factorial_cache[kCacheSize - (x % 2 == 0 ? 2 : 1)];
     double n = x;
-    while (n > 1.0) {
+    while (n >= kCacheSize) {
       s *= n;
       n -= 2.0;
     }
